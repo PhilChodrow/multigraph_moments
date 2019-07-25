@@ -35,24 +35,32 @@ def compute_b(d, alpha = 0.01, epsilon = 0.01, outer_epsilon = 0.001, max_steps 
     '''
     Works best when d is sorted
     '''
-    n = len(d)
+    
+    ord = np.argsort(d)
+    d_ = d[ord]
+    
+    un_ord = np.argsort(ord)
+    
+    n = len(d_)
     b0 = np.ones(n)
     b = b0
     approx = np.array([fun(b, i)[0] for i in range(n)])
-    err_old = ((approx - d)**2).mean()
+    err_old = ((approx - d_)**2).mean()
     k = 0
     while True:
         print('round ' + str(k) + ', current error = ' + str(round(err_old, 4)))
-        b = newton_round(b, d, alpha, epsilon)
+        b = newton_round(b, d_, alpha, epsilon)
         approx = np.array([fun(b, i)[0] for i in range(n)])
-        err = ((approx - d)**2).mean()
+        err = ((approx - d_)**2).mean()
         if np.abs(err - err_old) < outer_epsilon: 
             break
         err_old = err
         k += 1
         if k > max_steps:
             break
-    return b
+    
+    b_ = b[un_ord]
+    return(b_)
 
 def W_from_b(b):
     y = 0.5*b.sum()
