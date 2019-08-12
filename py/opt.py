@@ -31,24 +31,31 @@ def newton_round(b, d, alpha = .01, epsilon = .01):
             b[i] -= alpha*update
     return(b)
 
-def compute_b(d, alpha = 0.01, epsilon = 0.01, outer_epsilon = 0.001, max_steps = 10):
+def compute_b(d, alpha = 0.01, epsilon = 0.01, outer_epsilon = 0.001, max_steps = 10, sort = True, print_every = 1, b0 = None, return_err = False):
     '''
     Works best when d is sorted
     '''
     
-    ord = np.argsort(d)
+    if sort:
+        ord = np.argsort(d)
+    else:
+        ord = np.arange(len(d))
     d_ = d[ord]
     
     un_ord = np.argsort(ord)
     
     n = len(d_)
-    b0 = np.ones(n)
+
+    if b0 is None:
+        b0 = np.ones(n)
+        
     b = b0
     approx = np.array([fun(b, i)[0] for i in range(n)])
     err_old = ((approx - d_)**2).mean()
     k = 0
     while True:
-        print('round ' + str(k) + ', current error = ' + str(round(err_old, 4)))
+        if k % print_every == 0:
+            print('round ' + str(k) + ', current error = ' + str(round(err_old, 4)))
         b = newton_round(b, d_, alpha, epsilon)
         approx = np.array([fun(b, i)[0] for i in range(n)])
         err = ((approx - d_)**2).mean()
@@ -60,7 +67,10 @@ def compute_b(d, alpha = 0.01, epsilon = 0.01, outer_epsilon = 0.001, max_steps 
             break
     
     b_ = b[un_ord]
-    return(b_)
+    if return_err:
+        return(b_, err)
+    else:
+        return(b_)
 
 def W_from_b(b):
     y = 0.5*b.sum()
