@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.stats import rankdata
 
-def read_data(data, t_min = None, t_max = None):
+def read_data(data, prefix = '', t_min = None, t_max = None):
 
-    path = data + '/' + data + '-'
+    path = prefix + data + '/' + data + '-'
     # read in the data
 
     nverts = np.array([int(f.rstrip('\n')) for f in open(path + 'nverts.txt')])
