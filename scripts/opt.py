@@ -15,11 +15,8 @@ def fun(b, i):
     return(f, f_)
 
 
-def newton_round(b, d, alpha = .01, epsilon = .01):
+def newton_round(b, d, alpha = .01, eps = .01):
     n = len(d)
-
-    alpha = .01
-    eps = .01
     
     for i in range(n):
 
