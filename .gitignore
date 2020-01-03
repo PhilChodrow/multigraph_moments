@@ -1,4 +1,5 @@
 .ipynb_checkpoints
+*.pyc
 *.tar.gz
 throughput
 contact-high-school
@@ -8,4 +9,3 @@ scripts/hypergraph.py
 scripts/__pycache__/
 convergence.ipynb
 optimization.ipynb
-py
