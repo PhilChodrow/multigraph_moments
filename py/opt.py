@@ -1,38 +1,54 @@
 import numpy as np
 
+def degree_estimate(b):
+    return((W_from_b(b).sum(axis = 1)))
 
-def fun(b, i):
+def mse(b, d):
+    return(((degree_estimate(b) - d)**2).mean())
+
+def coord_obj(b, i, return_deriv = True):
     bb = b[i]*b 
     bb[i] = 0
     y = b.sum()/2
     
     f = (bb / (2*y - bb)).sum()
     
-    numerator = 2*y*b - bb
-    numerator[i] = 0
-    
-    f_ = (numerator/((2*y-bb)**2)).sum()
-    return(f, f_)
+    if return_deriv: 
+        numerator = 2*y*b - bb
+        numerator[i] = 0
 
+        f_ = (numerator/((2*y-bb)**2)).sum()
+        return(f, f_)
+    else:
+        return(f)
 
-def newton_round(b, d, alpha = .01, eps = .01):
+def newton_round(b, d, alpha = .01, eps = .01, require_feasible = True, feasible_value = 0):
     n = len(d)
     
     for i in range(n):
 
         while True:
-            f, f_ = fun(b, i)
-            update = (f - d[i])/f_
-            if np.abs(update) < eps:
+            f, f_ = coord_obj(b, i)
+            update = np.zeros(n)
+            update[i] = (f - d[i])/f_
+            b_ = b - alpha * update
+            
+            improvement = np.abs(f - d[i]) - np.abs(coord_obj(b_, i, False) - d[i])
+            
+            if (improvement > eps) and ((check_feasible(b_, feasible_value) or not require_feasible)):
+                b = b_
+            else:        
                 break
-            b[i] -= alpha*update
     return(b)
 
-def compute_b(d, alpha = 0.01, epsilon = 0.01, outer_epsilon = 0.001, max_steps = 10, sort = True, print_every = 1, b0 = None, return_err = False):
-    '''
-    Works best when d is sorted
-    '''
+def symmetrize(b, d):
+    for val in np.unique(d):
+        b[d == val] = b[d == val].mean()
+    return(b)
+
+def compute_b(d, alpha = 0.01, eps = 0.01, tol = 0.01, max_steps = 100, sort = True, b0 = None, message_every = 10, feasible_value = 0):
     
+    # sort and keep order to return in original order provided 
     if sort:
         ord = np.argsort(d)
     else:
@@ -42,32 +58,30 @@ def compute_b(d, alpha = 0.01, epsilon = 0.01, outer_epsilon = 0.001, max_steps 
     un_ord = np.argsort(ord)
     
     n = len(d_)
-
-    if b0 is None:
-        b0 = np.ones(n)
-        
-    b = b0
-    approx = np.array([fun(b, i)[0] for i in range(n)])
-    err_old = ((approx - d_)**2).mean()
-    k = 0
-    while True:
-        if k % print_every == 0:
-            print('round ' + str(k) + ', current error = ' + str(round(err_old, 4)))
-        b = newton_round(b, d_, alpha, epsilon)
-        approx = np.array([fun(b, i)[0] for i in range(n)])
-        err = ((approx - d_)**2).mean()
-        if np.abs(err - err_old) < outer_epsilon: 
-            break
-        err_old = err
-        k += 1
-        if k > max_steps:
-            break
     
-    b_ = b[un_ord]
-    if return_err:
-        return(b_, err)
+    # initialize first guess
+    if b0 is None:
+        b = np.ones(n)
     else:
-        return(b_)
+        b = b0
+
+    obj = mse(b, d)
+    
+    i = 0
+    while True:
+        i += 1
+        b = newton_round(b, d, eps = eps, alpha = alpha, feasible_value = feasible_value)
+        b = symmetrize(b, d)
+        obj = mse(b, d)
+        if obj < tol:
+            print('Successfully converged within tolerance ' + str(tol) + ' in ' + str(i) + ' steps.')
+            break
+        elif i > max_steps:
+            print('Warning: convergence within tolerance ' + str(tol) + ' not reached within ' + str(max_steps) + ' steps. MSE = ' + str(obj))
+            break
+        elif i % message_every == 0:
+            print('Step ' + str(i) + ': MSE = ' + str(obj))   
+    return(b, mse(b, d))
 
 def W_from_b(b):
     y = 0.5*b.sum()
@@ -75,3 +89,10 @@ def W_from_b(b):
     np.fill_diagonal(BB, 0)
     W = BB / (2*y - BB)
     return(W)
+
+def check_feasible(b, feasible_value = 0):
+    largest_pair = b[np.argpartition(b, -2)[-2:]]
+    nonsingular = largest_pair[0]*largest_pair[1] < b.sum()
+    
+    nonnegative = np.all(b >= feasible_value)
+    return(nonnegative & nonsingular)
