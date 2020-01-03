@@ -27,6 +27,14 @@ def X_from_b(b):
     return(BB/(2*y))
 
 def experiment(G, n_stub, n_vertex, n_rounds, sample_after, message_every = 100):
+    '''
+    G: an object of class hypergraph
+    n_stub: the number of rounds of stub-labeled MCMC to perform as a warm start
+    n_vertex: the number of rounds of vertex-labeled MCMC to perform in each round
+    n_rounds: the number of outer rounds to perform. 
+    sample_after: the number of outer rounds to let pass prior to sampling (burn-in)
+    message_every: the number of outer rounds between which messages should be printed. 
+    '''
     
     w = np.zeros((G.n, G.n))
     x = np.zeros((G.n, G.n))
