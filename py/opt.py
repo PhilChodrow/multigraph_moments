@@ -83,11 +83,15 @@ def compute_b(d, alpha = 0.01, eps = 0.01, tol = 0.01, max_steps = 100, sort = T
             print('Step ' + str(i) + ': MSE = ' + str(obj))   
     return(b, mse(b, d))
 
-def W_from_b(b):
+def X_from_b(b):
     y = 0.5*b.sum()
-    BB = np.outer(b, b)
-    np.fill_diagonal(BB, 0)
-    W = BB / (2*y - BB)
+    X = np.outer(b, b) / (2*y)
+    np.fill_diagonal(X, 0)
+    return(X)
+
+def W_from_b(b):
+    X = X_from_b(b)
+    W = X / (1-X)
     return(W)
 
 def check_feasible(b, feasible_value = 0):
