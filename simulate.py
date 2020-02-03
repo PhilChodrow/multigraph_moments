@@ -25,8 +25,8 @@ n_steps = 1000
 w, x, w2 = experiment(G, 
                       n_stub = 10**6,          # do stub-labeled MCMC as a warm-start 
                       n_vertex = n_steps/10,   # steps per round
-                      n_rounds = 10**7,        # number of sampling rounds
-                      sample_after = 10**6,    # give some time to mix
+                      n_rounds = 10**4,        # number of sampling rounds
+                      sample_after = 10**3,    # give some time to mix
                       message_every = 10**2)   # print a periodic message
 
 # save the results

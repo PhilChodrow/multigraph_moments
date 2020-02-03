@@ -1,7 +1,7 @@
 
 import numpy as np
 from matplotlib import pyplot as plt
-from py import opt, read, hypergraph
+from py import opt, read
 from py.utils import *
 
 import networkx as nx
