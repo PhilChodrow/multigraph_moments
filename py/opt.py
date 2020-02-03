@@ -49,11 +49,8 @@ def newton_round(b0, d, alpha = .01, eps = .01, require_feasible = True, feasibl
             update = np.zeros(n)
             update[i] = (f-d[i])/f_
             proposal = b - alpha*update
-#             if check_feasible(proposal):
             b = proposal
             b_out -= alpha*update
-#             else:
-#                 break
             if alpha*update[i] < eps:
                 break
     return(b_out)
@@ -144,7 +141,6 @@ def interpolator(x, b):
     y = b.sum()/2
     return((x*b/(2*y - x*b)).sum() - x**2 / (2*y - x**2))
 
-
 def X_from_b(b):
     y = 0.5*b.sum()
     X = np.outer(b, b) / (2*y)
@@ -163,18 +159,17 @@ def check_feasible(b, feasible_value = 0):
     nonnegative = np.all(b >= feasible_value)
     return(nonnegative & nonsingular)
 
-# bugged
 def jacobian(b):
     n = len(b)
     X = X_from_b(b)
-    A = X / (1-X)**2
+    S = X / (1-X)**2
     y = b.sum()/2
     
     B_inv = np.diag(1 / b)
     E = np.ones((n,n))
     
-    D = np.diag(A.sum(axis = 0))
-    J = (A + D).dot(B_inv) - 1/(2*y)*A.dot(E)
-    
+    D = np.diag(S.sum(axis = 0))
+
+    J = (S + D).dot(B_inv - 1/(4*y)*E) 
     
     return(J)
