@@ -127,7 +127,10 @@ def compute_b(d, method = 'default', tol = 0.01, max_rounds = 100, sort = True, 
         obj = mse(b, d)
         if obj < tol:
             if message_at_end:
-                print('Successfully converged within tolerance ' + str(tol) + ' in ' + str(i) + ' rounds.')
+                if check_feasible(b):
+                    print('Successfully converged within tolerance ' + str(tol) + ' in ' + str(i) + ' rounds, b is feasible.')
+                else:
+                    print('Successfully converged within tolerance ' + str(tol) + ' in ' + str(i) + ' rounds, b is NOT feasible.')
             break
         elif i > max_rounds:
             if message_at_end:
